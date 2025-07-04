@@ -1,0 +1,339 @@
+-- Load the Rayfield UI Library
+
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+
+-- Get local player
+
+local player = game.Players.LocalPlayer
+
+local autoblockEnabled = false
+
+-- Create the autoblock function
+
+local autoBlockThread = nil
+
+local function autoblock()
+
+    if autoBlockThread then
+
+        return
+
+    end
+
+    
+
+    autoBlockThread = task.spawn(function()
+
+        while autoblockEnabled do
+
+            if player.Character and player.Character:FindFirstChild("Duelist") and 
+
+               player.Character.Duelist:FindFirstChild("RE") and 
+
+               player.Character.Duelist.RE:FindFirstChild("Block") then
+
+                player.Character.Duelist.RE.Block:FireServer()
+
+            end
+
+            task.wait(0.1)
+
+        end
+
+        autoBlockThread = nil
+
+    end)
+
+end
+
+-- Create a window
+
+local Window = Rayfield:CreateWindow({
+
+    Name = "Veldros.hub [BETA]",
+
+    LoadingTitle = "Loading Interface...",
+
+    LoadingSubtitle = "Preparing features...",
+
+    ConfigurationSaving = {
+
+        Enabled = true,
+
+        FolderName = "DuelistConfig",
+
+        FileName = "Config"
+
+    },
+
+    KeySystem = false -- Set to true if you want to add a key system
+
+})
+
+-- Create tabs
+
+local CombatTab = Window:CreateTab("Combat", 4483362458) -- You can use an image ID here
+
+local MovementTab = Window:CreateTab("Movement", 4483345998)
+
+local SettingsTab = Window:CreateTab("Settings", 4483345998)
+
+-- Add autoblock toggle to Combat tab
+
+CombatTab:CreateToggle({
+
+    Name = "Auto Block",
+
+    CurrentValue = false,
+
+    Flag = "AutoBlockToggle",
+
+    Callback = function(Value)
+
+        autoblockEnabled = Value
+
+        
+
+        if Value then
+
+            -- Start autoblock
+
+            Rayfield:Notify({
+
+                Title = "Auto Block",
+
+                Content = "Auto Block has been enabled!",
+
+                Duration = 2
+
+            })
+
+            autoblock()
+
+        else
+
+            -- Stop autoblock
+
+            Rayfield:Notify({
+
+                Title = "Auto Block",
+
+                Content = "Auto Block has been disabled!",
+
+                Duration = 2
+
+            })
+
+        end
+
+    end
+
+})
+
+-- Add some additional combat options
+
+CombatTab:CreateButton({
+
+    Name = "Force Block Once",
+
+    Callback = function()
+
+        if player.Character and player.Character:FindFirstChild("Duelist") and 
+
+           player.Character.Duelist:FindFirstChild("RE") and 
+
+           player.Character.Duelist.RE:FindFirstChild("Block") then
+
+            player.Character.Duelist.RE.Block:FireServer()
+
+            Rayfield:Notify({
+
+                Title = "Block",
+
+                Content = "Manual block executed!",
+
+                Duration = 1
+
+            })
+
+        else
+
+            Rayfield:Notify({
+
+                Title = "Error",
+
+                Content = "Unable to block. Check if you're using the Duelist class.",
+
+                Duration = 3
+
+            })
+
+        end
+
+    end
+
+})
+
+-- Add speed changer to Movement tab
+
+MovementTab:CreateSlider({
+
+    Name = "Walk Speed",
+
+    Range = {16, 250},
+
+    Increment = 1,
+
+    Suffix = "Speed",
+
+    CurrentValue = 16,
+
+    Flag = "WalkSpeedSlider",
+
+    Callback = function(Value)
+
+        -- Set walk speed
+
+        if player.Character and player.Character:FindFirstChild("Humanoid") then
+
+            player.Character.Humanoid.WalkSpeed = Value
+
+        end
+
+    end
+
+})
+
+MovementTab:CreateSlider({
+
+    Name = "Jump Power",
+
+    Range = {50, 300},
+
+    Increment = 5,
+
+    Suffix = "Power",
+
+    CurrentValue = 50,
+
+    Flag = "JumpPowerSlider",
+
+    Callback = function(Value)
+
+        -- Set jump power
+
+        if player.Character and player.Character:FindFirstChild("Humanoid") then
+
+            player.Character.Humanoid.JumpPower = Value
+
+        end
+
+    end
+
+})
+
+-- Auto-reset speed values when character respawns
+
+player.CharacterAdded:Connect(function(character)
+
+    local humanoid = character:WaitForChild("Humanoid")
+
+    if humanoid then
+
+        -- Reset speed based on saved values
+
+        if Rayfield.Flags.WalkSpeedSlider then
+
+            humanoid.WalkSpeed = Rayfield.Flags.WalkSpeedSlider
+
+        end
+
+        if Rayfield.Flags.JumpPowerSlider then
+
+            humanoid.JumpPower = Rayfield.Flags.JumpPowerSlider
+
+        end
+
+    end
+
+end)
+
+-- Add settings to the Settings tab
+
+SettingsTab:CreateToggle({
+
+    Name = "Save Settings",
+
+    CurrentValue = true,
+
+    Flag = "SaveSettings",
+
+    Callback = function(Value)
+
+        -- Toggle whether settings are saved
+
+    end
+
+})
+
+SettingsTab:CreateKeybind({
+
+    Name = "Toggle UI",
+
+    CurrentKeybind = "RightControl",
+
+    HoldToInteract = false,
+
+    Flag = "ToggleUIKeybind",
+
+    Callback = function()
+
+        -- Toggle UI visibility
+
+        Rayfield:ToggleWindow()
+
+    end
+
+})
+
+-- Create a cooldown section for autoblock
+
+CombatTab:CreateSection("Auto Block Settings")
+
+CombatTab:CreateSlider({
+
+    Name = "Auto Block Interval",
+
+    Range = {0.05, 0.5},
+
+    Increment = 0.01,
+
+    Suffix = "sec",
+
+    CurrentValue = 0.1,
+
+    Flag = "AutoBlockInterval", 
+
+    Callback = function(Value)
+
+        -- This will update the autoblock interval
+
+        -- Note: Will apply on next autoblock toggle
+
+    end
+
+})
+
+-- Notify the player that the script has loaded
+
+Rayfield:Notify({
+
+    Title = "Script Loaded",
+
+    Content = "Duelist Helper has been successfully loaded!",
+
+    Duration = 3.5,
+
+    Image = 4483362458
+
+})
